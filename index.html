@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Votação dos trabalhos</title>
+<style>
+  :root{
+    --bg:#f6f5f2;
+    --card:#ffffff;
+    --ink:#1f2430;
+    --ink-soft:#5b6472;
+    --line:#e4e1d9;
+    --accent:#1f3a5f;
+    --accent-soft:#eef2f7;
+    --good:#2f7a4f;
+    --danger:#a4392f;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,20,20,.04), 0 8px 24px rgba(20,20,20,.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font:16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding-block:32px;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding-inline:20px;
+  }
+  header.top{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  header.top h1{
+    font-size:1.5rem;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header.top p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:.95rem;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:24px;
+  }
+  .center-card{
+    max-width:440px;
+    margin:0 auto;
+  }
+  label{
+    display:block;
+    font-size:.85rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  select{
+    width:100%;
+    padding:12px 14px;
+    font-size:1rem;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235b6472' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+  }
+  button{
+    font:inherit;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+    padding:12px 18px;
+    font-weight:600;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+    width:100%;
+    margin-top:16px;
+  }
+  .btn-primary:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+  .btn-primary:hover:not(:disabled){filter:brightness(1.08);}
+
+  .progress-wrap{
+    margin-bottom:22px;
+  }
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:.85rem;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .progress-bar{
+    height:8px;
+    border-radius:99px;
+    background:var(--line);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:99px;
+    transition:width .3s ease;
+  }
+
+  .target-card{
+    margin-bottom:16px;
+  }
+  .target-card h2{
+    font-size:1.05rem;
+    margin:0 0 16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .rating-row{
+    margin-bottom:16px;
+  }
+  .rating-row:last-of-type{margin-bottom:0;}
+  .rating-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:6px;
+  }
+  .rating-top .cat-name{
+    font-size:.9rem;
+    font-weight:600;
+    color:var(--ink);
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .rating-top .cat-value{
+    font-variant-numeric:tabular-nums;
+    font-weight:700;
+    color:var(--accent);
+    min-width:2.5em;
+    text-align:right;
+  }
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--accent);
+  }
+
+  .done-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--accent-soft);
+    color:var(--good);
+    font-size:.85rem;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:99px;
+  }
+  .target-card.done{
+    opacity:.7;
+  }
+  .error-msg{
+    color:var(--danger);
+    font-size:.85rem;
+    margin-top:8px;
+  }
+  .hint{
+    font-size:.82rem;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  .switch-user{
+    text-align:center;
+    margin-top:26px;
+  }
+  .switch-user button{
+    background:none;
+    color:var(--ink-soft);
+    font-size:.85rem;
+    text-decoration:underline;
+    padding:6px;
+  }
+  .thanks{
+    text-align:center;
+    padding:56px 24px;
+  }
+  .thanks .emoji{font-size:2.6rem;margin-bottom:12px;}
+  .thanks h2{margin:0 0 8px;}
+  .thanks p{color:var(--ink-soft);margin:0;}
+  .loading{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:60px 0;
+  }
+  [hidden]{display:none!important;}
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14171c;
+      --card:#1c2028;
+      --ink:#eef0f3;
+      --ink-soft:#9aa3b2;
+      --line:#2b303a;
+      --accent:#7fa6d9;
+      --accent-soft:#212a37;
+      --good:#6fce9a;
+      --danger:#e2887c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+    select{background-color:#1c2028;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>Votação dos trabalhos</h1>
+      <p>Tipografia · Cor · Composição — notas de 0 a 100</p>
+    </header>
+
+    <div id="loading" class="loading">Carregando…</div>
+
+    <!-- Tela 1: identificação -->
+    <section id="screen-identify" class="card center-card" hidden>
+      <label for="who">Quem é você?</label>
+      <select id="who">
+        <option value="" disabled selected>Selecione seu nome</option>
+      </select>
+      <p class="hint">Isso serve só para não te mostrar seu próprio trabalho e para saber o que já falta você avaliar. Suas notas continuam anônimas para os colegas.</p>
+      <button id="confirm-who" class="btn-primary" disabled>Confirmar</button>
+    </section>
+
+    <!-- Tela 2: votação -->
+    <section id="screen-vote" hidden>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span id="progress-text">0 de 0 concluídos</span>
+        </div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="targets"></div>
+      <div class="switch-user">
+        <button id="switch-user-btn">Não é você? Trocar de aluno</button>
+      </div>
+    </section>
+
+    <!-- Tela 3: agradecimento -->
+    <section id="screen-thanks" class="card thanks" hidden>
+      <div class="emoji">🎉</div>
+      <h2>Voto registrado!</h2>
+      <p>Você avaliou todos os trabalhos. Obrigado por participar.</p>
+    </section>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="students.js"></script>
+<script src="firebase-init.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var CATEGORIES = [
+    { key: "typography", label: "Tipografia" },
+    { key: "color", label: "Cor" },
+    { key: "composition", label: "Composição" },
+  ];
+
+  var loadingEl = document.getElementById("loading");
+  var screenIdentify = document.getElementById("screen-identify");
+  var screenVote = document.getElementById("screen-vote");
+  var screenThanks = document.getElementById("screen-thanks");
+  var whoSelect = document.getElementById("who");
+  var confirmWhoBtn = document.getElementById("confirm-who");
+  var targetsEl = document.getElementById("targets");
+  var progressText = document.getElementById("progress-text");
+  var progressFill = document.getElementById("progress-fill");
+  var switchUserBtn = document.getElementById("switch-user-btn");
+
+  var voterSlug = null;
+
+  function showOnly(el){
+    [screenIdentify, screenVote, screenThanks].forEach(function(s){
+      s.hidden = (s !== el);
+    });
+    loadingEl.hidden = true;
+  }
+
+  // --- Identificação ---
+
+  STUDENTS.forEach(function(name){
+    var opt = document.createElement("option");
+    opt.value = slugify(name);
+    opt.textContent = name;
+    whoSelect.appendChild(opt);
+  });
+
+  whoSelect.addEventListener("change", function(){
+    confirmWhoBtn.disabled = !whoSelect.value;
+  });
+
+  confirmWhoBtn.addEventListener("click", function(){
+    if (!whoSelect.value) return;
+    voterSlug = whoSelect.value;
+    localStorage.setItem("voterSlug", voterSlug);
+    startVoting();
+  });
+
+  switchUserBtn.addEventListener("click", function(){
+    localStorage.removeItem("voterSlug");
+    voterSlug = null;
+    whoSelect.value = "";
+    confirmWhoBtn.disabled = true;
+    showOnly(screenIdentify);
+  });
+
+  // --- Ordem estável (por aluno) dos trabalhos a avaliar ---
+
+  function seededShuffle(array, seedStr){
+    var seed = 0;
+    for (var i = 0; i < seedStr.length; i++){
+      seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
+    }
+    function rand(){
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    }
+    var arr = array.slice();
+    for (var j = arr.length - 1; j > 0; j--){
+      var k = Math.floor(rand() * (j + 1));
+      var tmp = arr[j]; arr[j] = arr[k]; arr[k] = tmp;
+    }
+    return arr;
+  }
+
+  function doneKey(target){ return "vote_done__" + voterSlug + "__" + target; }
+
+  function isDoneLocally(target){
+    return localStorage.getItem(doneKey(target)) === "1";
+  }
+
+  function markDoneLocally(target){
+    localStorage.setItem(doneKey(target), "1");
+  }
+
+  // --- Tela de votação ---
+
+  function startVoting(){
+    var targets = STUDENT_SLUGS.filter(function(s){ return s !== voterSlug; });
+    targets = seededShuffle(targets, voterSlug);
+    renderTargets(targets);
+    showOnly(screenVote);
+    updateProgress(targets);
+  }
+
+  function updateProgress(targets){
+    var doneCount = targets.filter(isDoneLocally).length;
+    progressText.textContent = doneCount + " de " + targets.length + " concluídos";
+    progressFill.style.width = (targets.length ? (doneCount / targets.length * 100) : 0) + "%";
+    if (doneCount === targets.length && targets.length > 0){
+      setTimeout(function(){ showOnly(screenThanks); }, 400);
+    }
+  }
+
+  function renderTargets(targets){
+    targetsEl.innerHTML = "";
+    targets.forEach(function(target){
+      var card = buildTargetCard(target, targets);
+      targetsEl.appendChild(card);
+    });
+  }
+
+  function buildTargetCard(target, targets){
+    var wrap = document.createElement("div");
+    wrap.className = "card target-card";
+    wrap.id = "card__" + target;
+
+    var already = isDoneLocally(target);
+    if (already) wrap.classList.add("done");
+
+    var title = document.createElement("h2");
+    title.textContent = SLUG_TO_NAME[target] || target;
+    if (already){
+      var badge = document.createElement("span");
+      badge.className = "done-badge";
+      badge.textContent = "✓ nota enviada";
+      title.appendChild(badge);
+    }
+    wrap.appendChild(title);
+
+    if (already){
+      return wrap;
+    }
+
+    var values = {};
+
+    CATEGORIES.forEach(function(cat){
+      values[cat.key] = 50;
+
+      var row = document.createElement("div");
+      row.className = "rating-row";
+
+      var top = document.createElement("div");
+      top.className = "rating-top";
+      var name = document.createElement("span");
+      name.className = "cat-name";
+      name.textContent = cat.label;
+      var val = document.createElement("span");
+      val.className = "cat-value";
+      val.textContent = "50";
+      top.appendChild(name);
+      top.appendChild(val);
+      row.appendChild(top);
+
+      var range = document.createElement("input");
+      range.type = "range";
+      range.min = "0";
+      range.max = "100";
+      range.step = "1";
+      range.value = "50";
+      range.addEventListener("input", function(){
+        var v = Math.round(Number(range.value));
+        values[cat.key] = v;
+        val.textContent = String(v);
+      });
+      row.appendChild(range);
+
+      wrap.appendChild(row);
+    });
+
+    var errorMsg = document.createElement("div");
+    errorMsg.className = "error-msg";
+    errorMsg.hidden = true;
+
+    var submitBtn = document.createElement("button");
+    submitBtn.className = "btn-primary";
+    submitBtn.textContent = "Enviar nota";
+    submitBtn.addEventListener("click", function(){
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Enviando…";
+      errorMsg.hidden = true;
+      submitVote(target, values)
+        .then(function(){
+          markDoneLocally(target);
+          updateProgress(targets);
+          var fresh = buildTargetCard(target, targets);
+          wrap.replaceWith(fresh);
+        })
+        .catch(function(err){
+          if (err && err.code === "permission-denied"){
+            // Muito provavelmente já foi votado antes (nesta ou noutra sessão).
+            markDoneLocally(target);
+            updateProgress(targets);
+            var fresh2 = buildTargetCard(target, targets);
+            wrap.replaceWith(fresh2);
+            return;
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Enviar nota";
+          errorMsg.textContent = "Não foi possível enviar. Verifique sua internet e tente de novo.";
+          errorMsg.hidden = false;
+        });
+    });
+
+    wrap.appendChild(submitBtn);
+    wrap.appendChild(errorMsg);
+
+    return wrap;
+  }
+
+  function submitVote(target, values){
+    var data = {
+      voter: voterSlug,
+      target: target,
+      typography: Math.round(Number(values.typography)),
+      color: Math.round(Number(values.color)),
+      composition: Math.round(Number(values.composition)),
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    var voteId = voterSlug + "__" + target;
+    return db.collection("votes").doc(voteId).set(data).then(function(){
+      return db.collection("voters").doc(voterSlug).set({
+        submittedCount: firebase.firestore.FieldValue.increment(1),
+        lastVoteAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+  }
+
+  // --- Autenticação e arranque ---
+
+  auth.signInAnonymously().catch(function(err){
+    loadingEl.textContent = "Não foi possível conectar. Verifique sua internet e recarregue a página.";
+    console.error(err);
+  });
+
+  auth.onAuthStateChanged(function(user){
+    if (!user) return;
+    var saved = localStorage.getItem("voterSlug");
+    if (saved && STUDENT_SLUGS.indexOf(saved) !== -1){
+      voterSlug = saved;
+      startVoting();
+    } else {
+      showOnly(screenIdentify);
+    }
+  });
+})();
+</script>
+</body>
+</html>
