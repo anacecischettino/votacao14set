@@ -148,16 +148,31 @@
     text-transform:none;
     letter-spacing:0;
   }
-  .rating-top .cat-value{
-    font-variant-numeric:tabular-nums;
+  .score-input{
+    width:84px;
+    flex:0 0 auto;
+    padding:9px 6px;
+    font-size:1.15rem;
     font-weight:700;
+    font-variant-numeric:tabular-nums;
+    text-align:center;
     color:var(--accent);
-    min-width:2.5em;
-    text-align:right;
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:9px;
   }
-  input[type="range"]{
-    width:100%;
-    accent-color:var(--accent);
+  .score-input::placeholder{
+    color:var(--ink-soft);
+    font-weight:400;
+    font-size:.85rem;
+  }
+  .score-input:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .score-input.invalid{
+    border-color:var(--danger);
   }
 
   .done-badge{
@@ -223,6 +238,7 @@
       --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
     }
     select{background-color:#1c2028;}
+    .score-input{background-color:#1c2028;}
   }
 </style>
 </head>
@@ -407,11 +423,9 @@
       return wrap;
     }
 
-    var values = {};
+    var inputs = {};
 
     CATEGORIES.forEach(function(cat){
-      values[cat.key] = 50;
-
       var row = document.createElement("div");
       row.className = "rating-row";
 
@@ -420,26 +434,26 @@
       var name = document.createElement("span");
       name.className = "cat-name";
       name.textContent = cat.label;
-      var val = document.createElement("span");
-      val.className = "cat-value";
-      val.textContent = "50";
-      top.appendChild(name);
-      top.appendChild(val);
-      row.appendChild(top);
 
-      var range = document.createElement("input");
-      range.type = "range";
-      range.min = "0";
-      range.max = "100";
-      range.step = "1";
-      range.value = "50";
-      range.addEventListener("input", function(){
-        var v = Math.round(Number(range.value));
-        values[cat.key] = v;
-        val.textContent = String(v);
+      var input = document.createElement("input");
+      input.type = "text";
+      input.inputMode = "numeric";
+      input.pattern = "[0-9]*";
+      input.maxLength = 3;
+      input.className = "score-input";
+      input.placeholder = "0–100";
+      input.autocomplete = "off";
+      input.addEventListener("input", function(){
+        var digits = input.value.replace(/[^0-9]/g, "").slice(0, 3);
+        if (digits !== "" && Number(digits) > 100) digits = "100";
+        input.value = digits;
+        input.classList.remove("invalid");
       });
-      row.appendChild(range);
+      inputs[cat.key] = input;
 
+      top.appendChild(name);
+      top.appendChild(input);
+      row.appendChild(top);
       wrap.appendChild(row);
     });
 
@@ -451,6 +465,24 @@
     submitBtn.className = "btn-primary";
     submitBtn.textContent = "Enviar nota";
     submitBtn.addEventListener("click", function(){
+      var values = {};
+      var allValid = true;
+      CATEGORIES.forEach(function(cat){
+        var raw = inputs[cat.key].value.trim();
+        var n = /^[0-9]{1,3}$/.test(raw) ? parseInt(raw, 10) : NaN;
+        if (isNaN(n) || n < 0 || n > 100){
+          allValid = false;
+          inputs[cat.key].classList.add("invalid");
+        } else {
+          values[cat.key] = n;
+        }
+      });
+      if (!allValid){
+        errorMsg.textContent = "Preencha as 3 notas com números inteiros de 0 a 100.";
+        errorMsg.hidden = false;
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.textContent = "Enviando…";
       errorMsg.hidden = true;
